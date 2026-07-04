@@ -1,0 +1,50 @@
+{% extends "employee_base.html" %}
+{% block content %}
+<div class="employee-profile-grid">
+    <section class="employee-profile-card employee-profile-card-wide">
+        <div class="employee-profile-summary-head">
+            <div class="employee-profile-top">
+                <div class="employee-profile-avatar-wrap">
+                    {% if current_employee["profile_image"] %}
+                    <img class="employee-profile-avatar" src="{{ url_for('static', filename=current_employee['profile_image']) }}" alt="{{ current_employee['full_name'] }} profile picture">
+                    {% else %}
+                    <div class="employee-profile-avatar employee-profile-avatar-fallback">{{ current_employee_initials }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <h2>{{ current_employee["full_name"] }}</h2>
+                    <p class="employee-note">{{ current_employee["role_name"] }} · {{ current_employee["dept_name"] }}</p>
+                </div>
+            </div>
+            <div class="employee-hero-actions">
+                <a class="employee-action-btn" href="{{ url_for('employee_profile_edit', employee_slug=employee_slug) }}">Edit Profile</a>
+            </div>
+        </div>
+
+        <div class="employee-profile-section">
+            <h3>Work Profile</h3>
+            <div class="employee-info-list compact">
+                <div><span>Employee Code</span><strong>{{ current_employee["emp_code"] }}</strong></div>
+                <div><span>Work Email</span><strong>{{ current_employee["email"] or "Not added" }}</strong></div>
+                <div><span>Phone</span><strong>{{ current_employee["phone"] or "Not added" }}</strong></div>
+                <div><span>Alternate Phone</span><strong>{{ current_employee["alternate_phone"] or "Not added" }}</strong></div>
+                <div><span>Join Date</span><strong>{{ current_employee["join_date"] or "Not available" }}</strong></div>
+                <div><span>Department</span><strong>{{ current_employee["dept_name"] }}</strong></div>
+                <div><span>Role</span><strong>{{ current_employee["role_name"] }}</strong></div>
+                <div><span>Status</span><strong>{{ current_employee["status"] or "Active" }}</strong></div>
+                <div><span>Portal Login</span><strong>{{ current_employee["email"] or current_employee["emp_code"] }}</strong></div>
+            </div>
+        </div>
+
+        <div class="employee-profile-section">
+            <h3>Personal Details</h3>
+            <div class="employee-info-list compact">
+                <div><span>Date of Birth</span><strong>{{ current_employee["date_of_birth"] or "Not added" }}</strong></div>
+                <div><span>Blood Group</span><strong>{{ current_employee["blood_group"] or "Not added" }}</strong></div>
+                <div><span>Emergency Contact</span><strong>{{ current_employee["emergency_contact"] or "Not added" }}</strong></div>
+                <div class="employee-info-wide"><span>Address</span><strong>{{ current_employee["address"] or "Not added" }}</strong></div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "employee_base.html" %}
+{% block content %}
+<div class="employee-form-card">
+    <h2>Submit Leave Request</h2>
+    <form method="post" action="{{ url_for('employee_apply_leave', employee_slug=employee_slug) }}" class="employee-form-grid">
+        <label>
+            From Date
+            <input type="date" name="from_date" value="{{ form_state['from_date'] }}" required>
+        </label>
+        <label>
+            To Date
+            <input type="date" name="to_date" value="{{ form_state['to_date'] }}" required>
+        </label>
+        <label>
+            Leave Type
+            <select name="leave_type">
+                <option value="Casual Leave" {% if form_state['leave_type'] == 'Casual Leave' %}selected{% endif %}>Casual Leave</option>
+                <option value="Sick Leave" {% if form_state['leave_type'] == 'Sick Leave' %}selected{% endif %}>Sick Leave</option>
+                <option value="Emergency Leave" {% if form_state['leave_type'] == 'Emergency Leave' %}selected{% endif %}>Emergency Leave</option>
+                <option value="Work From Home" {% if form_state['leave_type'] == 'Work From Home' %}selected{% endif %}>Work From Home</option>
+            </select>
+        </label>
+        <label class="full-width">
+            Reason
+            <textarea name="reason" rows="4" placeholder="Write a short reason for your leave request." required>{{ form_state['reason'] }}</textarea>
+        </label>
+        <button type="submit" class="employee-action-btn">Submit Leave Request</button>
+    </form>
+</div>
+
+<div class="employee-form-card">
+    <h2>Recent Requests</h2>
+    {% if recent_requests %}
+    <div class="employee-table-wrap">
+        <table class="employee-table">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Days</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Applied On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in recent_requests %}
+                <tr>
+                    <td>{{ row['from_date'] }}</td>
+                    <td>{{ row['to_date'] }}</td>
+                    <td>{{ row['days'] }}</td>
+                    <td>{{ row['leave_type'] }}</td>
+                    <td><span class="employee-status-badge">{{ row['status'] }}</span></td>
+                    <td>{{ row['applied_on'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="employee-empty-state">No leave requests submitted yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

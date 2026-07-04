@@ -1,0 +1,38 @@
+{% extends "employee_base.html" %}
+{% block content %}
+<div class="employee-form-card">
+    <h2>Attendance History</h2>
+    {% if attendance_rows %}
+    <div class="employee-table-wrap" style="max-height: 300px; overflow-y: auto;">
+        <table class="employee-table">
+            <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                <tr>
+                    <th>Date</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Hours</th>
+                    <th>Break</th>
+                    <th>Status</th>
+                    <th>Late</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in attendance_rows %}
+                <tr>
+                    <td>{{ row['date'] }}</td>
+                    <td>{{ row['check_in'] or '--' }}</td>
+                    <td>{{ row['check_out'] or '--' }}</td>
+                    <td>{{ row['work_hours'] or 0 }}</td>
+                    <td>{{ row['break_hours'] or 0 }}</td>
+                    <td><span class="employee-status-badge">{{ row['status'] or 'N/A' }}</span></td>
+                    <td>{% if row['late_flag'] %}Yes{% else %}No{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="employee-empty-state">No attendance records available yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

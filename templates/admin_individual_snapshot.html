@@ -1,0 +1,133 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<style>
+    .settings-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .settings-card h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    .settings-card .desc {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1.75rem;
+        border-bottom: 1px solid #f1f3f5;
+        padding-bottom: 1rem;
+    }
+    .custom-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .custom-input-group label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .custom-input-group input {
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 1rem;
+        color: #212529;
+        transition: all 0.2s ease-in-out;
+        background-color: #f8f9fa;
+        font-family: inherit;
+    }
+    .custom-input-group input:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        background-color: #fff;
+    }
+</style>
+
+<div class="settings-card" style="border-top: 4px solid #17a2b8;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+        <h2 style="margin: 0;">Employee-Wise Attendance Totals ({{ selected_month }})</h2>
+        <a href="{{ url_for('leave_management') }}" style="font-size: 0.85rem; color: #007bff; text-decoration: none; font-weight: 600;">&larr; Back To Leave Page</a>
+    </div>
+    
+    <div class="desc" style="line-height: 1.7;">
+        <div style="display: flex; gap: 0.5rem; align-items: flex-start; margin-bottom: 0.25rem;">
+            <span style="flex-shrink: 0;">🔴</span>
+            <span><strong>Red Flag:</strong> Given when an employee has (3 or more total leave days OR 3 or more absent days) AND 3 or more total late marks. This represents a combination of frequent absences and frequent tardiness.</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: flex-start; margin-bottom: 0.25rem;">
+            <span style="flex-shrink: 0;">🟠</span>
+            <span><strong>Orange Flag:</strong> Given when an employee has 3 or more total leave days, but does not have enough late marks to trigger the Red Flag.</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+            <span style="flex-shrink: 0;">🟡</span>
+            <span><strong>Yellow Flag:</strong> Given when an employee has a streak of 3 or more continuous half-days.</span>
+        </div>
+    </div>
+    
+    <form method="get" action="{{ url_for('individual_attendance_snapshot') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <div class="custom-input-group" style="flex: 1; min-width: 150px;">
+            <label>Filter Month</label>
+            <input type="month" name="month" value="{{ selected_month }}">
+        </div>
+        <div class="custom-input-group" style="flex: 1; min-width: 200px;">
+            <label>Search Employee Name</label>
+            <input type="text" name="q" value="{{ query }}" placeholder="Type employee name">
+        </div>
+        <button type="submit" class="panel-btn" style="padding: 0.85rem 1.5rem; font-size: 1rem; height: 100%;">Search</button>
+        {% if query %}
+        <a href="{{ url_for('individual_attendance_snapshot') }}" class="panel-btn secondary link-btn" style="padding: 0.85rem 1.5rem; font-size: 1rem; display: inline-flex; align-items: center; text-decoration: none;">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="employee-snapshot-grid">
+    {% for person in employee_cards %}
+    <article class="employee-snapshot-card {% if person['red_flag'] %}red{% elif person['orange_flag'] %}orange{% elif person['yellow_card'] %}warning{% endif %}">
+        <div class="employee-snapshot-head">
+            <h3>{{ person["full_name"] }}</h3>
+            {% if person["red_flag"] %}
+            <span class="red-flag-pill">RED FLAG</span>
+            {% elif person["orange_flag"] %}
+            <span class="orange-flag-pill">ORANGE FLAG</span>
+            {% elif person["yellow_card"] %}
+            <span class="yellow-card-pill">YELLOW FLAG</span>
+            {% endif %}
+        </div>
+        <p class="employee-snapshot-meta">{{ person["emp_code"] }} | {{ person["dept_name"] }}</p>
+        <div class="employee-snapshot-stats">
+            <div>
+                <span>Total Present</span>
+                <strong>{{ person["total_present"] }}</strong>
+            </div>
+            <div>
+                <span>Total Absent</span>
+                <strong class="stat-absent">{{ person["total_absent"] }}</strong>
+            </div>
+            <div>
+                <span>Total Leave</span>
+                <strong>{{ person["total_leave_days"] }}</strong>
+            </div>
+            <div>
+                <span>Total Late Marks</span>
+                <strong>{{ person["total_late_days"] }}</strong>
+            </div>
+        </div>
+        <p class="employee-snapshot-note">Continuous Half-Day Streak: {{ person["max_half_day_streak"] }}</p>
+    </article>
+    {% else %}
+    <div class="settings-card" style="border-top: 4px solid #6c757d; grid-column: 1 / -1; margin-bottom: 0;">
+        <p class="desc" style="border: none; margin: 0; padding: 0;">No employee data found.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

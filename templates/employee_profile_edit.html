@@ -1,0 +1,91 @@
+{% extends "employee_base.html" %}
+{% block content %}
+<div class="employee-profile-grid">
+    <section class="employee-profile-card employee-profile-edit-card">
+        <div class="employee-profile-edit-head">
+            <div>
+                <p class="employee-section-kicker">Profile Workspace</p>
+                <h2>Edit Profile</h2>
+                <p>Update your personal details here. Your employee code, role, department, and work status still stay controlled by HR.</p>
+            </div>
+            <a class="employee-outline-link" href="{{ url_for('employee_profile', employee_slug=employee_slug) }}">Back to Profile</a>
+        </div>
+
+        <div class="employee-profile-edit-summary">
+            <div class="employee-profile-avatar-wrap employee-profile-edit-avatar-wrap">
+                {% if current_employee["profile_image"] %}
+                <img class="employee-profile-avatar" src="{{ url_for('static', filename=current_employee['profile_image']) }}" alt="{{ current_employee['full_name'] }} profile picture">
+                {% else %}
+                <div class="employee-profile-avatar employee-profile-avatar-fallback">{{ current_employee_initials }}</div>
+                {% endif %}
+            </div>
+            <div>
+          <h2>{{ current_employee["full_name"] }}</h2>
+                <p class="employee-profile-edit-subtitle">{{ current_employee["role_name"] }} · {{ current_employee["dept_name"] }}</p>
+            </div>
+        </div>
+          <div class="employee-profile-edit-copy">
+                
+                <div class="employee-profile-meta-grid">
+                    <div class="employee-profile-meta-item">
+                        <span>Employee Code</span>
+                        <strong>{{ current_employee["emp_code"] }}</strong>
+                    </div>
+                    <div class="employee-profile-meta-item">
+                        <span>Work Email</span>
+                        <strong>{{ current_employee["email"] or "Not added" }}</strong>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <section class="employee-form-card">
+        <h2>Profile Details</h2>
+        <form method="post" action="{{ url_for('employee_profile_edit', employee_slug=employee_slug) }}" enctype="multipart/form-data" class="employee-form-grid">
+            <label>
+                Full Name
+                <input type="text" name="full_name" value="{{ form_state['full_name'] }}" required>
+            </label>
+            <label>
+                Email
+                <input type="email" name="email" value="{{ form_state['email'] }}" placeholder="name@company.com">
+            </label>
+            <label>
+                Phone
+                <input type="text" name="phone" value="{{ form_state['phone'] }}" placeholder="9876543210">
+            </label>
+            <label>
+                Alternate Phone
+                <input type="text" name="alternate_phone" value="{{ form_state['alternate_phone'] }}" placeholder="Optional alternate number">
+            </label>
+            <label>
+                Date of Birth
+                <input type="date" name="date_of_birth" value="{{ form_state['date_of_birth'] }}">
+            </label>
+            <label>
+                Blood Group
+                <select name="blood_group">
+                    <option value="">Select blood group</option>
+                    {% for option in blood_group_options %}
+                    <option value="{{ option }}" {% if form_state['blood_group'] == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                Emergency Contact
+                <input type="text" name="emergency_contact" value="{{ form_state['emergency_contact'] }}" placeholder="Name and number">
+            </label>
+            <label>
+                Profile Picture
+                <input type="file" name="profile_image" accept=".png,.jpg,.jpeg,.webp">
+            </label>
+            <label class="full-width">
+                Address
+                <textarea name="address" rows="4" placeholder="House number, street, city, state">{{ form_state['address'] }}</textarea>
+            </label>
+            <div class="full-width employee-form-help">Accepted file types: PNG, JPG, JPEG, WEBP. Maximum size: 5 MB.</div>
+            <button type="submit" class="employee-action-btn">Save Profile</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

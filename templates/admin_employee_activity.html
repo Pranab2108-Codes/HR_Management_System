@@ -1,0 +1,86 @@
+{% extends "admin_base.html" %}
+{% block content %}
+
+<style>
+    .settings-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .settings-card:hover {
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        transform: translateY(-2px);
+    }
+    .snapshot-nav-card {
+        display: block;
+        text-decoration: none;
+        border: 1px solid #d7e2ef;
+        border-radius: 8px;
+        background: #fff;
+        border-left: 4px solid #17a2b8;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .snapshot-nav-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        background: #f8f9fa;
+    }
+    .snapshot-nav-card h2 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.15rem;
+        color: #212529;
+    }
+    .snapshot-nav-card p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+</style>
+
+<a
+    class="snapshot-nav-card"
+    href="{{ url_for('department_report', department_id=selected_department['department_id'], date=report_date) }}"
+>
+    <h2>&larr; Back to {{ selected_department["dept_name"] }}</h2>
+    <p>Return to the employee cards for {{ report_date }}.</p>
+</a>
+
+<div class="settings-card" style="border-top: 4px solid #6f42c1;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div>
+            <h2 style="margin: 0; font-size: 1.35rem; color: #212529;">{{ selected_employee["full_name"] }}</h2>
+            <p style="margin: 0.25rem 0 0; color: #6c757d; font-size: 0.95rem;">
+                {{ selected_department["dept_name"] }} &middot; {{ selected_employee["emp_code"] }}
+                {% if selected_employee["role_name"] %}
+                &middot; {{ selected_employee["role_name"] }}
+                {% endif %}
+            </p>
+        </div>
+        <span style="background: #e2e8f0; color: #334155; font-size: 0.9rem; padding: 0.4rem 0.8rem; border-radius: 999px; font-weight: 700;">{{ "%.2f"|format(selected_employee["work_hours"]) }} hrs</span>
+    </div>
+
+    {% if selected_employee["task_slots"] %}
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for slot in selected_employee["task_slots"] %}
+        <div style="display: flex; gap: 1rem; align-items: flex-start; border: 1px solid #e9ecef; border-radius: 8px; background: #f8f9fa; padding: 1rem; transition: all 0.2s ease;">
+            <span style="min-width: 120px; font-size: 0.85rem; font-weight: 700; color: #495057; padding-top: 0.1rem;">{{ slot["time_label"] }}</span>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem; flex: 1;">
+                <strong style="color: #212529; font-size: 0.95rem;">{{ slot["title"] }}</strong>
+                {% if slot["status"] %}
+                <span style="font-size: 0.8rem; color: #6c757d;">{{ slot["status"] }}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: #6c757d; font-size: 0.95rem; margin: 0; padding: 1rem; text-align: center; background: #f8f9fa; border-radius: 8px; border: 1px dashed #dee2e6;">No hourly tasks assigned for {{ selected_employee["full_name"] }} on {{ report_date }}.</p>
+    {% endif %}
+</div>
+{% endblock %}

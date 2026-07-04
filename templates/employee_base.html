@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="employee-portal-body" data-endpoint="{{ request.endpoint }}">
+    <div class="employee-portal-shell">
+        <header class="employee-portal-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <p class="employee-portal-kicker">Employee Portal</p>
+                <h1>{{ page_title }}</h1>
+                <p class="employee-portal-subtitle">{{ page_subtitle }}</p>
+            </div>
+            <div>
+                <a href="{{ url_for('logout') }}" class="employee-action-btn" style="background-color: #000; color: #fff; border: none; padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px;">Logout</a>
+            </div>
+        </header>
+
+        <nav class="employee-portal-nav">
+            <a class="employee-nav-link {% if request.endpoint == 'employee_dashboard' %}active{% endif %}" href="{{ url_for('employee_dashboard', employee_slug=employee_slug) }}">Dashboard</a>
+            <a class="employee-nav-link {% if request.endpoint in ('employee_profile', 'employee_profile_edit') %}active{% endif %}" href="{{ url_for('employee_profile', employee_slug=employee_slug) }}">Profile</a>
+            <a class="employee-nav-link {% if request.endpoint == 'employee_hourly' %}active{% endif %}" href="{{ url_for('employee_hourly', employee_slug=employee_slug) }}">Hourly</a>
+            <a class="employee-nav-link {% if request.endpoint == 'employee_check_in' %}active{% endif %}" href="{{ url_for('employee_check_in', employee_slug=employee_slug) }}">Check In</a>
+            <a class="employee-nav-link {% if request.endpoint == 'employee_apply_leave' %}active{% endif %}" href="{{ url_for('employee_apply_leave', employee_slug=employee_slug) }}">Apply Leave</a>
+            <a class="employee-nav-link {% if request.endpoint == 'employee_attendance' %}active{% endif %}" href="{{ url_for('employee_attendance', employee_slug=employee_slug) }}">View Attendance</a>
+            <a class="employee-nav-link {% if request.endpoint == 'employee_leave_status' %}active{% endif %}" href="{{ url_for('employee_leave_status', employee_slug=employee_slug) }}">View Leave Status</a>
+            <a class="employee-nav-link notice-nav-link {% if request.endpoint == 'employee_notices' %}active{% endif %}"
+               href="{{ url_for('employee_notices') }}"
+               data-notice-link="true"
+               data-latest-notice="{{ latest_notice_id or 0 }}"
+               data-employee-slug="{{ employee_slug or 'employee' }}">
+                Notices
+                <span class="notice-dot" aria-hidden="true"></span>
+            </a>
+            <a class="employee-nav-link {% if request.endpoint == 'employee_policy' %}active{% endif %}" href="{{ url_for('employee_policy', employee_slug=employee_slug) }}">Company Policy</a>
+        </nav>
+
+        <section class="employee-portal-content">
+            {% block content %}{% endblock %}
+        </section>
+    </div>
+
+    <script>
+        (function () {
+            var noticeLink = document.querySelector("[data-notice-link='true']");
+            if (!noticeLink) {
+                return;
+            }
+            var latestId = parseInt(noticeLink.getAttribute("data-latest-notice") || "0", 10);
+            if (!latestId) {
+                return;
+            }
+            var employeeSlug = noticeLink.getAttribute("data-employee-slug") || "employee";
+            var storageKey = "employee_notice_seen_" + employeeSlug;
+            var dot = noticeLink.querySelector(".notice-dot");
+            var isNoticesPage = document.body && document.body.getAttribute("data-endpoint") === "employee_notices";
+
+            try {
+                var lastSeen = parseInt(window.localStorage.getItem(storageKey) || "0", 10);
+                if (lastSeen < latestId && dot) {
+                    dot.classList.add("is-visible");
+                }
+                if (isNoticesPage) {
+                    window.localStorage.setItem(storageKey, String(latestId));
+                    if (dot) {
+                        dot.classList.remove("is-visible");
+                    }
+                } else {
+                    noticeLink.addEventListener("click", function () {
+                        window.localStorage.setItem(storageKey, String(latestId));
+                        if (dot) {
+                            dot.classList.remove("is-visible");
+                        }
+                    });
+                }
+            } catch (error) {
+                if (dot) {
+                    dot.classList.remove("is-visible");
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

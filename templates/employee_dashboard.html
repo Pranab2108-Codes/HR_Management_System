@@ -1,0 +1,54 @@
+{% extends "employee_base.html" %}
+{% block content %}
+<div class="employee-hero-card" style="padding: 1rem 1.5rem; margin-bottom: 1rem;">
+    <div>
+        <p class="employee-hero-kicker">{{ today }}</p>
+        <h2>{{ greeting }}, {{ first_name }}</h2>
+        <p class="employee-hero-copy">Welcome back. Here is your employee dashboard with the quick actions you need most often.</p>
+    </div>
+    <div class="employee-hero-actions">
+        <a class="employee-action-btn" href="{{ url_for('employee_check_in', employee_slug=employee_slug) }}">Check In Now</a>
+        <a class="employee-action-btn secondary" href="{{ url_for('employee_profile', employee_slug=employee_slug) }}">View Profile</a>
+    </div>
+</div>
+
+<div style="max-height: calc(100vh - 250px); overflow-y: auto; padding-right: 10px; overflow-x: hidden;">
+<div class="employee-stat-grid" style="gap: 0.75rem; margin-bottom: 0.75rem;">
+    <article class="employee-quick-card">
+        <span>Today's Status</span>
+        <strong>{{ today_attendance["status"] if today_attendance else "Not Checked In" }}</strong>
+        <small>
+            {% if today_attendance and today_attendance["check_in"] %}
+            Check In: {{ today_attendance["check_in"] }}
+            {% else %}
+            No attendance recorded yet for today.
+            {% endif %}
+        </small>
+    </article>
+    <article class="employee-quick-card">
+        <span>Present Days</span>
+        <strong>{{ summary["present_days"] }}</strong>
+        <small>Present attendance records for {{ current_month_label }}.</small>
+    </article>
+    <article class="employee-quick-card">
+        <span>Pending Leaves</span>
+        <strong>{{ leave_summary["pending_requests"] }}</strong>
+        <small>{{ leave_summary["total_requests"] }} total leave requests submitted.</small>
+    </article>
+</div>
+
+<div class="employee-stat-grid" style="gap: 0.75rem; margin-bottom: 1rem;">
+    <article class="employee-quick-card">
+        <span>Late Comings</span>
+        <strong>{{ summary["late_days"] }}</strong>
+        <small>Times marked late this month.</small>
+    </article>
+    <article class="employee-quick-card">
+        <span>Leaves Taken</span>
+        <strong>{{ summary["leave_days"] }}</strong>
+        <small>Leave days used this month.</small>
+    </article>
+</div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,422 @@
+{% extends "admin_base.html" %}
+{% block content %}
+{% if message %}
+<p class="notice">{{ message }}</p>
+{% endif %}
+
+<style>
+    .settings-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .settings-card:hover {
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        transform: translateY(-2px);
+    }
+    .settings-card h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    .settings-card p.desc {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1.75rem;
+        border-bottom: 1px solid #f1f3f5;
+        padding-bottom: 1rem;
+    }
+    .custom-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .custom-input-group label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .custom-input-group input, .custom-input-group select {
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 1rem;
+        color: #212529;
+        transition: all 0.2s ease-in-out;
+        background-color: #f8f9fa;
+        font-family: inherit;
+    }
+    .custom-input-group input:focus, .custom-input-group select:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        background-color: #fff;
+    }
+</style>
+
+<div class="settings-card" style="border-top: 4px solid #007bff;">
+    <div class="attendance-head">
+        <h2 style="margin: 0;">Attendance Views</h2>
+        <div class="tab-row">
+            <a
+                href="{{ url_for('attendance_management', view='daily', date=selected_date, month=selected_month) }}"
+                class="tab-btn {% if view_mode == 'daily' %}active{% endif %}"
+            >
+                Daily Attendance
+            </a>
+            <a
+                href="{{ url_for('attendance_management', view='monthly', date=selected_date, month=selected_month) }}"
+                class="tab-btn {% if view_mode == 'monthly' %}active{% endif %}"
+            >
+                Monthly Attendance
+            </a>
+        </div>
+    </div>
+
+    <form method="get" action="{{ url_for('attendance_management') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-top: 1rem;">
+        <input type="hidden" name="view" value="{{ view_mode }}">
+        {% if view_mode == "daily" %}
+        <div class="custom-input-group" style="flex: 1; min-width: 200px;">
+            <label>Filter By Date</label>
+            <input type="date" name="date" value="{{ selected_date }}">
+        </div>
+        <input type="hidden" name="month" value="{{ selected_month }}">
+        {% else %}
+        <div class="custom-input-group" style="flex: 1; min-width: 200px;">
+            <label>Filter By Month</label>
+            <input type="month" name="month" value="{{ selected_month }}">
+        </div>
+        <input type="hidden" name="date" value="{{ selected_date }}">
+        {% endif %}
+        <button type="submit" class="panel-btn" style="padding: 0.85rem 1.5rem; font-size: 1rem; height: 100%;">Apply Filter</button>
+    </form>
+</div>
+
+{% if view_mode == "daily" %}
+<div class="split-grid">
+    <div class="settings-card" style="border-top: 4px solid #6f42c1; padding: 1.5rem;">
+        <h2 style="font-size: 1.15rem; margin-bottom: 0.25rem;">Daily Attendance Graph ({{ selected_date }})</h2>
+        <p class="desc" style="margin-bottom: 1rem;">Present vs Leave vs Absent vs Holiday.</p>
+        <canvas id="dailyAttendanceChart" class="chart-canvas"></canvas>
+    </div>
+
+    <div class="settings-card" style="border-top: 4px solid #17a2b8; padding: 1.5rem;">
+        <h2 style="font-size: 1.15rem; margin-bottom: 0.25rem;">Monthly Attendance Graph ({{ selected_month }})</h2>
+        <p class="desc" style="margin-bottom: 1rem;">Date-wise attendance trend for present, leave, and absent.</p>
+        <canvas id="monthlyAttendanceChart" class="chart-canvas"></canvas>
+    </div>
+</div>
+
+<div class="settings-card" style="border-top: 4px solid #28a745;">
+    <h2>Daily Attendance ({{ selected_date }})</h2>
+    <p class="desc">Includes late flag and work hours for each employee.</p>
+    <div class="table-wrap" style="max-height: 400px; overflow-y: auto; border: 1px solid #e0e4e8; border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse; margin: 0;">
+            <thead style="position: sticky; top: 0; background: #f3f7fb; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+                <tr>
+                    <th>Emp Code</th>
+                    <th>Name</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Work Hours</th>
+                    <th>Status</th>
+                    <th>Late Flag</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in attendance_rows %}
+                <tr>
+                    <td>{{ row["emp_code"] }}</td>
+                    <td>{{ row["full_name"] }}</td>
+                    <td>{{ row["check_in"] or "-" }}</td>
+                    <td>{{ row["check_out"] or "-" }}</td>
+                    <td>{{ row["work_hours"] }}</td>
+                    <td><span class="badge">{{ row["status"] }}</span></td>
+                    <td>{{ "Yes" if row["late_flag"] else "No" }}</td>
+                    <td>
+                        <a
+                            class="row-btn"
+                            href="{{ url_for('attendance_management', view='daily', date=selected_date, month=selected_month, override_id=row['id']) }}#override-section"
+                        >
+                            Override
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8">No attendance records for this date.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if override_row %}
+<div id="override-section" class="settings-card" style="border-top: 4px solid #fd7e14;">
+    <h2>Manual Override (Rare Cases)</h2>
+    <p class="desc">
+        Editing record for <strong>{{ override_row["full_name"] }}</strong> ({{ override_row["emp_code"] }}) on {{ override_row["date"] }}.
+    </p>
+    <form method="post" action="{{ url_for('override_attendance', attendance_id=override_row['id']) }}" class="employee-form">
+        <input type="hidden" name="view" value="{{ view_mode }}">
+        <input type="hidden" name="date" value="{{ selected_date }}">
+        <input type="hidden" name="month" value="{{ selected_month }}">
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="custom-input-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="Present" {% if (override_row["status"] or "")|lower == "present" %}selected{% endif %}>Present</option>
+                    <option value="Absent" {% if (override_row["status"] or "")|lower == "absent" %}selected{% endif %}>Absent</option>
+                    <option value="Leave" {% if (override_row["status"] or "")|lower == "leave" %}selected{% endif %}>Leave</option>
+                    <option value="Holiday" {% if (override_row["status"] or "")|lower == "holiday" %}selected{% endif %}>Holiday</option>
+                </select>
+            </div>
+            <div class="custom-input-group">
+                <label>Check In</label>
+                <input type="time" name="check_in" value="{{ override_row['check_in'] or '' }}">
+            </div>
+            <div class="custom-input-group">
+                <label>Check Out</label>
+                <input type="time" name="check_out" value="{{ override_row['check_out'] or '' }}">
+            </div>
+            <div class="custom-input-group">
+                <label>Work Hours</label>
+                <input type="number" name="work_hours" step="0.01" min="0" value="{{ override_row['work_hours'] }}">
+            </div>
+            <div class="custom-input-group">
+                <label>Late Flag</label>
+                <select name="late_flag">
+                    <option value="0" {% if not override_row['late_flag'] %}selected{% endif %}>No</option>
+                    <option value="1" {% if override_row['late_flag'] %}selected{% endif %}>Yes</option>
+                </select>
+        </div>
+
+        <div class="button-row" style="margin-top: 1.5rem;">
+            <button type="submit" class="panel-btn" style="padding: 0.75rem 1.5rem; font-size: 1rem;">Save Override</button>
+            <a class="panel-btn secondary link-btn" style="padding: 0.75rem 1.5rem; font-size: 1rem; display: inline-flex; align-items: center;" href="{{ url_for('attendance_management', view='daily', date=selected_date, month=selected_month) }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endif %}
+{% else %}
+<div class="settings-card" style="border-top: 4px solid #28a745;">
+    <h2>Monthly Attendance Summary ({{ selected_month }})</h2>
+    <p class="desc">Manual override is available in Daily Attendance view.</p>
+    <div class="table-wrap" style="max-height: 400px; overflow-y: auto; border: 1px solid #e0e4e8; border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse; margin: 0;">
+            <thead style="position: sticky; top: 0; background: #f3f7fb; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+                <tr>
+                    <th>Emp Code</th>
+                    <th>Name</th>
+                    <th>Present Days</th>
+                    <th>Leave Days</th>
+                    <th>Absent Days</th>
+                    <th>Late Days</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in monthly_rows %}
+                <tr>
+                    <td>{{ row["emp_code"] }}</td>
+                    <td>{{ row["full_name"] }}</td>
+                    <td>{{ row["present_days"] }}</td>
+                    <td>{{ row["leave_days"] }}</td>
+                    <td>{{ row["absent_days"] }}</td>
+                    <td>{{ row["late_days"] }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6">No monthly attendance data found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    (function () {
+        const chartData = {
+            daily: {{ daily_chart | tojson }},
+            monthly: {{ monthly_chart | tojson }}
+        };
+
+        function getCanvasContext(id) {
+            const canvas = document.getElementById(id);
+            if (!canvas) {
+                return null;
+            }
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            const width = Math.max(rect.width, 320);
+            const height = Math.max(rect.height, 240);
+            canvas.width = Math.floor(width * dpr);
+            canvas.height = Math.floor(height * dpr);
+            const ctx = canvas.getContext("2d");
+            ctx.scale(dpr, dpr);
+            return { ctx, width, height };
+        }
+
+        function drawNoData(ctx, width, height, text) {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "#64748b";
+            ctx.font = "14px Trebuchet MS";
+            ctx.textAlign = "center";
+            ctx.fillText(text, width / 2, height / 2);
+            ctx.textAlign = "left";
+        }
+
+        function drawDailyDonut() {
+            const pack = getCanvasContext("dailyAttendanceChart");
+            if (!pack) {
+                return;
+            }
+            const { ctx, width, height } = pack;
+            const labels = chartData.daily.labels || [];
+            const values = chartData.daily.values || [];
+            const colors = ["#2f9e44", "#f08c00", "#e03131", "#5c7cfa"];
+            const total = values.reduce((sum, value) => sum + value, 0);
+
+            if (!total) {
+                drawNoData(ctx, width, height, "No daily attendance data");
+                return;
+            }
+
+            const cx = width * 0.36;
+            const cy = height * 0.5;
+            const radius = Math.min(width, height) * 0.27;
+            let start = -Math.PI / 2;
+
+            ctx.clearRect(0, 0, width, height);
+            values.forEach((value, index) => {
+                if (!value) {
+                    return;
+                }
+                const angle = (value / total) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, radius, start, start + angle);
+                ctx.closePath();
+                ctx.fillStyle = colors[index % colors.length];
+                ctx.fill();
+                start += angle;
+            });
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 0.56, 0, Math.PI * 2);
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+
+            ctx.fillStyle = "#1f2937";
+            ctx.font = "bold 14px Trebuchet MS";
+            ctx.textAlign = "center";
+            ctx.fillText("Total", cx, cy - 6);
+            ctx.font = "bold 20px Trebuchet MS";
+            ctx.fillText(String(total), cx, cy + 18);
+            ctx.textAlign = "left";
+
+            const lx = width * 0.62;
+            const ly = height * 0.26;
+            labels.forEach((label, i) => {
+                const y = ly + i * 30;
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fillRect(lx, y - 10, 14, 14);
+                ctx.fillStyle = "#334155";
+                ctx.font = "13px Trebuchet MS";
+                ctx.fillText(`${label}: ${values[i] || 0}`, lx + 22, y + 1);
+            });
+        }
+
+        function drawMonthlyBars() {
+            const pack = getCanvasContext("monthlyAttendanceChart");
+            if (!pack) {
+                return;
+            }
+            const { ctx, width, height } = pack;
+            const labels = chartData.monthly.labels || [];
+            const present = chartData.monthly.present || [];
+            const leave = chartData.monthly.leave || [];
+            const absent = chartData.monthly.absent || [];
+            if (!labels.length) {
+                drawNoData(ctx, width, height, "No monthly attendance data");
+                return;
+            }
+
+            const plot = { x: 44, y: 24, w: width - 62, h: height - 56 };
+            const maxValue = Math.max(1, ...present, ...leave, ...absent);
+            const groupWidth = plot.w / labels.length;
+            const barWidth = Math.max(2, Math.min(8, groupWidth * 0.2));
+            const colors = { present: "#2f9e44", leave: "#f08c00", absent: "#e03131" };
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.strokeStyle = "#d8e2ee";
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i += 1) {
+                const y = plot.y + (plot.h / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(plot.x, y);
+                ctx.lineTo(plot.x + plot.w, y);
+                ctx.stroke();
+                const value = Math.round(maxValue - (maxValue / 4) * i);
+                ctx.fillStyle = "#64748b";
+                ctx.font = "11px Trebuchet MS";
+                ctx.fillText(String(value), 10, y + 4);
+            }
+
+            labels.forEach((label, index) => {
+                const gx = plot.x + index * groupWidth + groupWidth / 2;
+                const pHeight = (present[index] / maxValue) * plot.h;
+                const lHeight = (leave[index] / maxValue) * plot.h;
+                const aHeight = (absent[index] / maxValue) * plot.h;
+
+                ctx.fillStyle = colors.present;
+                ctx.fillRect(gx - barWidth * 1.5, plot.y + plot.h - pHeight, barWidth, pHeight);
+                ctx.fillStyle = colors.leave;
+                ctx.fillRect(gx - barWidth * 0.3, plot.y + plot.h - lHeight, barWidth, lHeight);
+                ctx.fillStyle = colors.absent;
+                ctx.fillRect(gx + barWidth * 0.9, plot.y + plot.h - aHeight, barWidth, aHeight);
+
+                if (labels.length <= 12 || index % Math.ceil(labels.length / 8) === 0) {
+                    ctx.fillStyle = "#64748b";
+                    ctx.font = "10px Trebuchet MS";
+                    ctx.fillText(label.slice(-2), gx - 5, height - 10);
+                }
+            });
+
+            const legendY = 12;
+            [["Present", colors.present], ["Leave", colors.leave], ["Absent", colors.absent]].forEach((item, i) => {
+                const x = 54 + i * 90;
+                ctx.fillStyle = item[1];
+                ctx.fillRect(x, legendY, 12, 12);
+                ctx.fillStyle = "#334155";
+                ctx.font = "12px Trebuchet MS";
+                ctx.fillText(item[0], x + 18, legendY + 10);
+            });
+        }
+
+        let resizeTimer = null;
+        function renderCharts() {
+            drawDailyDonut();
+            drawMonthlyBars();
+        }
+
+        window.addEventListener("resize", function () {
+            window.clearTimeout(resizeTimer);
+            resizeTimer = window.setTimeout(renderCharts, 120);
+        });
+
+        renderCharts();
+    })();
+</script>
+{% endblock %}

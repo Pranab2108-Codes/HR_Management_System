@@ -1,0 +1,13 @@
+<header class="app-header">
+    <div class="header-left">
+        <h3>HRMS Portal</h3>
+    </div>
+    <div class="header-right">
+        {% if employee_authenticated %}
+            <div class="user-avatar" title="{{ session.get('employee_name', 'Employee') }}">
+                {{ current_employee_initials }}
+            </div>
+            <a href="{{ url_for('logout') }}" class="btn btn-logout">Logout</a>
+        {% endif %}
+    </div>
+</header>

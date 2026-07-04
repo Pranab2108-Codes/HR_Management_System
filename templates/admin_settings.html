@@ -1,0 +1,263 @@
+{% extends "admin_base.html" %}
+{% block content %}
+{% if message %}
+<p class="notice">{{ message }}</p>
+{% endif %}
+
+<style>
+    .settings-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .settings-card:hover {
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        transform: translateY(-2px);
+    }
+    .settings-card h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    .settings-card p.desc {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1.75rem;
+        border-bottom: 1px solid #f1f3f5;
+        padding-bottom: 1rem;
+    }
+    .custom-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .custom-input-group label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .custom-input-group input {
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 1rem;
+        color: #212529;
+        transition: all 0.2s ease-in-out;
+        background-color: #f8f9fa;
+    }
+    .custom-input-group input:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        background-color: #fff;
+    }
+    .policy-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+    }
+    .notice-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.25rem;
+        transition: box-shadow 0.2s ease;
+    }
+    .notice-card:hover {
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .btn-outline {
+        background: transparent;
+        border: 1px solid #ced4da;
+        color: #495057;
+        padding: 0.4rem 0.85rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+    .btn-outline:hover {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+        color: #212529;
+    }
+</style>
+
+<form method="post" action="{{ url_for('save_system_settings') }}" class="employee-form">
+    <div style="display: flex; flex-direction: column;">
+        <div class="settings-card" style="border-top: 4px solid #007bff;">
+            <h2>Attendance Policy</h2>
+            <p class="desc">Configure daily work hours, log out times, and late mark thresholds.</p>
+            <div class="policy-grid">
+                <div class="custom-input-group">
+                    <label>Workday Start Time</label>
+                    <input type="time" name="workday_start_time" value="{{ settings['workday_start_time'] }}">
+                </div>
+                <div class="custom-input-group">
+                    <label>Log Out Time</label>
+                    <input type="time" name="logout_time" value="{{ settings['logout_time'] }}">
+                </div>
+                <div class="custom-input-group">
+                    <label>Late Mark Threshold</label>
+                    <input type="time" name="late_mark_threshold" value="{{ settings['late_mark_threshold'] }}">
+                </div>
+                <div class="custom-input-group">
+                    <label>Maximum Work Hours</label>
+                    <input type="number" name="maximum_work_hours" min="0" max="24" step="0.1" value="{{ settings['maximum_work_hours'] }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-card" style="border-top: 4px solid #28a745;">
+            <h2>Leave Policy</h2>
+            <p class="desc">Set annual allowances for employee casual and sick leaves.</p>
+            <div class="policy-grid">
+                <div class="custom-input-group">
+                    <label>Casual Leave (Days)</label>
+                    <input type="number" name="casual_leave_days" min="0" step="1" value="{{ settings['casual_leave_days'] }}">
+                </div>
+                <div class="custom-input-group">
+                    <label>Sick Leave (Days)</label>
+                    <input type="number" name="sick_leave_days" min="0" step="1" value="{{ settings['sick_leave_days'] }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-card" style="border-top: 4px solid #fd7e14;">
+            <h2>Geofencing Policy</h2>
+            <p class="desc">Define the physical office boundaries to validate attendance check-ins.</p>
+            <div class="policy-grid">
+                <div class="custom-input-group">
+                    <label>Office Latitude</label>
+                    <input type="text" name="office_latitude" value="{{ settings['office_latitude'] }}" placeholder="e.g., 28.6139">
+                </div>
+                <div class="custom-input-group">
+                    <label>Office Longitude</label>
+                    <input type="text" name="office_longitude" value="{{ settings['office_longitude'] }}" placeholder="e.g., 77.2090">
+                </div>
+                <div class="custom-input-group">
+                    <label>Allowed Radius (Meters)</label>
+                    <input type="number" name="geofence_radius_meters" min="0" step="10" value="{{ settings['geofence_radius_meters'] }}">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0;">Current Policy Preview</h2>
+            <button type="submit" class="panel-btn">Save Settings</button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; border: 1px solid #e9ecef;">
+                <span style="display: block; font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem;">Workday Start</span>
+                <strong style="font-size: 1.2rem; color: #212529;">{{ settings["workday_start_time"] }}</strong>
+            </div>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; border: 1px solid #e9ecef;">
+                <span style="display: block; font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem;">Log Out Time</span>
+                <strong style="font-size: 1.2rem; color: #212529;">{{ settings["logout_time"] }}</strong>
+            </div>
+            <div style="background: #fff3f3; padding: 1rem; border-radius: 6px; border: 1px solid #ffc8c8;">
+                <span style="display: block; font-size: 0.85rem; color: #dc3545; margin-bottom: 0.25rem;">Late Mark Threshold</span>
+                <strong style="font-size: 1.2rem; color: #dc3545;">{{ settings["late_mark_threshold"] }}</strong>
+            </div>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; border: 1px solid #e9ecef;">
+                <span style="display: block; font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem;">Max Work Hours</span>
+                <strong style="font-size: 1.2rem; color: #212529;">{{ settings["maximum_work_hours"] }} hrs</strong>
+            </div>
+            <div style="background: #f0f8ff; padding: 1rem; border-radius: 6px; border: 1px solid #cce5ff;">
+                <span style="display: block; font-size: 0.85rem; color: #007bff; margin-bottom: 0.25rem;">Casual Leave</span>
+                <strong style="font-size: 1.2rem; color: #007bff;">{{ settings["casual_leave_days"] }} days/yr</strong>
+            </div>
+            <div style="background: #f0f8ff; padding: 1rem; border-radius: 6px; border: 1px solid #cce5ff;">
+                <span style="display: block; font-size: 0.85rem; color: #007bff; margin-bottom: 0.25rem;">Sick Leave</span>
+                <strong style="font-size: 1.2rem; color: #007bff;">{{ settings["sick_leave_days"] }} days/yr</strong>
+            </div>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; border: 1px solid #e9ecef;">
+                <span style="display: block; font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem;">Office Coordinates</span>
+                <strong style="font-size: 1.1rem; color: #212529;">{{ settings["office_latitude"] }}, {{ settings["office_longitude"] }}</strong>
+            </div>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; border: 1px solid #e9ecef;">
+                <span style="display: block; font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem;">Geofence Radius</span>
+                <strong style="font-size: 1.2rem; color: #212529;">{{ settings["geofence_radius_meters"] }} meters</strong>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="split-grid">
+    <div class="settings-card" style="border-top: 4px solid #6f42c1; margin-bottom: 0;">
+        <h2>Office Notifications</h2>
+        <p class="desc">Publish holiday, closure, or festival notices for employees.</p>
+        <form method="post" action="{{ url_for('add_notification') }}" class="employee-form">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="custom-input-group">
+                    <label>Notification Title</label>
+                    <input type="text" name="title" value="{{ notification_form['title'] }}" placeholder="Festival Holiday Notice">
+                </div>
+                <div class="custom-input-group">
+                    <label>Notice Date</label>
+                    <input type="date" name="notice_date" value="{{ notification_form['notice_date'] }}">
+                </div>
+                <div class="custom-input-group">
+                    <label>Notification Message</label>
+                    <input type="text" name="message" value="{{ notification_form['message'] }}" placeholder="Office will remain closed tomorrow for the festival.">
+                </div>
+                <div class="custom-input-group">
+                    <label>Office Closed Status</label>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; background: #f8f9fa; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 6px;">
+                        <input type="checkbox" name="office_closed" value="1" {% if notification_form['office_closed'] %}checked{% endif %} style="width: 1.25rem; height: 1.25rem; cursor: pointer; margin: 0;">
+                        <span style="font-size: 0.95rem; color: #212529;">Entire office is shut down</span>
+                    </div>
+                </div>
+            </div>
+            <div class="button-row" style="margin-top: 1.5rem;">
+                <button type="submit" class="panel-btn" style="padding: 0.75rem 1.5rem; font-size: 1rem; width: 100%;">Publish Notification</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="settings-card" style="border-top: 4px solid #17a2b8; margin-bottom: 0;">
+        <h2>Published Notifications</h2>
+        <p class="desc">Manage active and archived announcements.</p>
+        {% if notifications %}
+        <div style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
+            {% for notice in notifications %}
+            <div class="notice-card" style="border-left: 4px solid {% if notice['office_closed'] %}#dc3545{% else %}#28a745{% endif %};">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div>
+                        <h3 style="margin: 0 0 0.25rem 0; font-size: 1.15rem; color: #212529;">{{ notice["title"] }}</h3>
+                        <p style="margin: 0; font-size: 0.85rem; color: #6c757d;">{{ notice["notice_date"] }} &middot; <strong style="color: #495057;">{{ notice["day_label"] }}</strong></p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+                        {% if notice["office_closed"] %}
+                        <span style="background: #fff3f3; color: #dc3545; border: 1px solid #ffc8c8; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Office Closed</span>
+                        {% endif %}
+                        <span style="background: {% if notice['is_active'] %}#d4edda{% else %}#e2e3e5{% endif %}; color: {% if notice['is_active'] %}#155724{% else %}#383d41{% endif %}; border: 1px solid {% if notice['is_active'] %}#c3e6cb{% else %}#d6d8db{% endif %}; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                            {{ "Active" if notice["is_active"] else "Archived" }}
+                        </span>
+                    </div>
+                </div>
+                <p style="margin: 0.75rem 0 1rem 0; color: #495057; font-size: 0.95rem; line-height: 1.5;">{{ notice["message"] }}</p>
+                <form method="post" action="{{ url_for('toggle_notification', notification_id=notice['id']) }}" style="margin: 0; text-align: right;">
+                    <button type="submit" class="btn-outline">
+                        {{ "Archive" if notice["is_active"] else "Reactivate" }}
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="desc" style="border: none;">No notifications published yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

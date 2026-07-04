@@ -1,0 +1,90 @@
+{% extends "admin_base.html" %}
+{% block content %}
+{% if message %}
+<p class="notice">{{ message }}</p>
+{% endif %}
+
+<style>
+    .settings-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .settings-card:hover {
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        transform: translateY(-2px);
+    }
+    .settings-card h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    .settings-card p.desc {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1.75rem;
+        border-bottom: 1px solid #f1f3f5;
+        padding-bottom: 1rem;
+    }
+    .custom-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .custom-input-group label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .custom-input-group input {
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 1rem;
+        color: #212529;
+        transition: all 0.2s ease-in-out;
+        background-color: #f8f9fa;
+    }
+    .custom-input-group input:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        background-color: #fff;
+    }
+</style>
+
+<div class="settings-card" style="border-top: 4px solid #17a2b8;">
+    <h2>Database Snapshot</h2>
+    <p class="desc" style="border: none; padding-bottom: 0; margin-bottom: 0;">Current database file size: <strong style="color: #212529;">{{ file_size_bytes }}</strong> bytes</p>
+</div>
+
+<div class="settings-card" style="border-top: 4px solid #28a745;">
+    <h2>Monthly CSV Export</h2>
+    <p class="desc">
+        Export the selected month as an aggregated summary CSV, detailing total present, absent, leave, and late days per employee.
+    </p>
+    <form method="get" action="{{ url_for('export_monthly_csv') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <div class="custom-input-group" style="flex: 1; min-width: 200px;">
+            <label>Export Month</label>
+            <input type="month" name="month" value="{{ selected_month }}">
+        </div>
+        <button type="submit" class="panel-btn" style="padding: 0.85rem 1.5rem; font-size: 1rem; height: 100%;">Export Attendance CSV</button>
+    </form>
+</div>
+
+<div class="settings-card" style="border-top: 4px solid #6c757d; margin-bottom: 0;">
+    <h2>Included In Export</h2>
+    <p class="desc" style="border-bottom: none; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">Data fields included in the monthly report.</p>
+    <ul class="plain-list" style="margin-left: 1.5rem; color: #495057;">
+        <li style="margin-bottom: 0.5rem;"><strong>Columns:</strong> <code>Emp Code</code>, <code>Name</code>, <code>Present Days</code>, <code>Leave Days</code>, <code>Absent Days</code>, <code>Late Days</code>.</li>
+        <li style="margin-bottom: 0.5rem;">Rows are grouped by employee and filtered strictly by the selected calendar month.</li>
+    </ul>
+</div>
+{% endblock %}

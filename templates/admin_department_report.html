@@ -1,0 +1,42 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<a class="snapshot-nav-card" href="{{ url_for('reports', date=report_date) }}">
+    <h2>Back to Department Reports</h2>
+    <p>Return to the department overview for {{ report_date }}.</p>
+</a>
+
+<div class="panel">
+    <h2>{{ selected_department["dept_name"] }} ({{ report_date }})</h2>
+    <p class="muted">
+        {{ selected_department["working_employee_count"] }} employees are currently working in this department.
+        Click an employee card to open the hourly activity view.
+    </p>
+
+    <div class="employee-snapshot-grid">
+        {% for employee in selected_department["members"] %}
+        <a
+            class="report-card-link"
+            href="{{ url_for('employee_activity_report', department_id=selected_department['department_id'], employee_id=employee['employee_id'], date=report_date) }}"
+        >
+            <article class="employee-snapshot-card">
+                <div class="employee-snapshot-head">
+                    <h3>{{ employee["full_name"] }}</h3>
+                    <span class="badge">{{ "%.2f"|format(employee["work_hours"]) }} hrs</span>
+                </div>
+                <p class="employee-snapshot-meta">
+                    {{ employee["emp_code"] }}
+                    {% if employee["role_name"] %}
+                    · {{ employee["role_name"] }}
+                    {% endif %}
+                </p>
+                <p class="employee-snapshot-note">
+                    {{ employee["task_slots"] | length }} hourly task slots available for this day.
+                </p>
+            </article>
+        </a>
+        {% else %}
+        <p class="muted">No employees are marked as working in {{ selected_department["dept_name"] }} for {{ report_date }}.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "employee_base.html" %}
+{% block content %}
+<div class="employee-form-card">
+    {% if message %}
+    <p class="notice">{{ message }}</p>
+    {% endif %}
+
+    <div class="check-in-status-card">
+        <h2>Today's Attendance: {{ today }}</h2>
+        {% if today_record and today_record.check_in %}
+            <p><strong>Check In:</strong> {{ today_record.check_in }}</p>
+            {% if today_record.check_out %}
+                <p><strong>Check Out:</strong> {{ today_record.check_out }}</p>
+                <p><strong>Work Hours:</strong> {{ today_record.work_hours }}</p>
+            {% else %}
+                <p>You are currently checked in.</p>
+            {% endif %}
+        {% else %}
+            <p>You have not checked in yet today.</p>
+        {% endif %}
+    </div>
+
+    <div id="location-status" style="padding: 1rem; background-color: #f8f9fa; border-radius: 4px; margin-bottom: 1rem; display: none;">
+        <p style="margin: 0; font-weight: 500;"></p>
+    </div>
+
+    <div class="button-row" style="display: flex; gap: 1rem;">
+        <form method="post" action="{{ url_for('employee_check_in', employee_slug=employee_slug) }}" style="flex: 1;">
+            <input type="hidden" name="attendance_action" value="check_in">
+            <input type="hidden" name="latitude" id="latitude_checkin">
+            <input type="hidden" name="longitude" id="longitude_checkin">
+            <button type="submit" id="checkin_btn" class="employee-action-btn" style="width: 100%;" data-allowed="{{ '1' if can_check_in else '0' }}" disabled>Check In Now</button>
+        </form>
+
+        <form method="post" action="{{ url_for('employee_check_in', employee_slug=employee_slug) }}" style="flex: 1;">
+            <input type="hidden" name="attendance_action" value="check_out">
+            <input type="hidden" name="latitude" id="latitude_checkout">
+            <input type="hidden" name="longitude" id="longitude_checkout">
+            <button type="submit" id="checkout_btn" class="employee-action-btn secondary" style="width: 100%;" data-allowed="{{ '1' if can_check_out else '0' }}" disabled>Check Out Now</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const locationStatus = document.getElementById('location-status');
+    const locationStatusText = locationStatus.querySelector('p');
+    const checkinBtn = document.getElementById('checkin_btn');
+    const checkoutBtn = document.getElementById('checkout_btn');
+
+    function setLocationStatus(message, isError = false) {
+        locationStatus.style.display = 'block';
+        locationStatusText.textContent = message;
+        locationStatus.style.backgroundColor = isError ? '#f8d7da' : '#d4edda';
+        locationStatusText.style.color = isError ? '#721c24' : '#155724';
+    }
+
+    if (!navigator.geolocation) {
+        setLocationStatus('Geolocation is not supported by your browser.', true);
+    } else {
+        setLocationStatus('Getting your location to verify you are at the office...');
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                setLocationStatus('Location acquired. You can now check in or out.', false);
+                document.querySelectorAll('input[name="latitude"]').forEach(el => el.value = latitude);
+                document.querySelectorAll('input[name="longitude"]').forEach(el => el.value = longitude);
+                if (checkinBtn && checkinBtn.dataset.allowed === '1') checkinBtn.disabled = false;
+                if (checkoutBtn && checkoutBtn.dataset.allowed === '1') checkoutBtn.disabled = false;
+            },
+            () => {
+                setLocationStatus('Unable to retrieve your location. Please enable location services in your browser and device settings.', true);
+            }
+        );
+    }
+});
+</script>
+{% endblock %}

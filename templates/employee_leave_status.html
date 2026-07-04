@@ -1,0 +1,40 @@
+{% extends "employee_base.html" %}
+{% block content %}
+<div class="employee-form-card">
+    <h2>Leave Request Status</h2>
+    {% if leave_rows %}
+    <div class="employee-table-wrap">
+        <table class="employee-table">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Days</th>
+                    <th>Type</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Applied On</th>
+                    <th>Approved On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in leave_rows %}
+                <tr>
+                    <td>{{ row['from_date'] }}</td>
+                    <td>{{ row['to_date'] }}</td>
+                    <td>{{ row['days'] }}</td>
+                    <td>{{ row['leave_type'] }}</td>
+                    <td>{{ row['reason'] }}</td>
+                    <td><span class="employee-status-badge">{{ row['status'] }}</span></td>
+                    <td>{{ row['applied_on'] }}</td>
+                    <td>{{ row['approved_on'] or '--' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="employee-empty-state">No leave requests available yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

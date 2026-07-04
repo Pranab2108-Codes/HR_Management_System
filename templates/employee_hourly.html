@@ -1,0 +1,53 @@
+{% extends "employee_base.html" %}
+{% block content %}
+<div class="employee-profile-card">
+    <div class="employee-profile-card-head">
+        <div>
+            <h2>Daily Timetable</h2>
+            <p>Your standard office schedule starts at {{ hourly_summary["office_start"] }} and ends at {{ hourly_summary["logout_time"] }}.</p>
+        </div>
+    </div>
+
+    <div class="employee-stat-grid compact">
+        <article class="employee-quick-card">
+            <span>Office Start</span>
+            <strong>{{ hourly_summary["office_start"] }}</strong>
+            <small>First work block begins here.</small>
+        </article>
+        <article class="employee-quick-card">
+            <span>Log Out</span>
+            <strong>{{ hourly_summary["logout_time"] }}</strong>
+            <small>Standard end-of-day sign-off time.</small>
+        </article>
+    </div>
+
+    <div class="hourly-schedule-grid">
+        {% for item in hourly_schedule %}
+        <form method="post" class="hourly-slot-form">
+            <div class="hourly-slot-card">
+                <div class="hourly-slot-header">
+                    <div class="hourly-slot-info">
+                        <h3>{{ item["slot_label"] }}</h3>
+                        <p class="time-range">{{ item["time_range"] }}</p>
+                    </div>
+                </div>
+                <textarea 
+                    name="detail__{{ item['slot_key'] }}" 
+                    rows="3" 
+                    class="hourly-detail-textarea"
+                    placeholder="Write what you are working on during this slot...">{{ item.get("note_text", "") }}</textarea>
+                <div class="slot-button-container">
+                    <select name="status__{{ item['slot_key'] }}" class="hourly-status-select">
+                        <option value="">-- Select Status --</option>
+                        <option value="completed" {% if item.get("status") == "completed" %}selected{% endif %}>Completed</option>
+                        <option value="on-going" {% if item.get("status") == "on-going" %}selected{% endif %}>On-Going</option>
+                        <option value="upcoming" {% if item.get("status") == "upcoming" %}selected{% endif %}>Upcoming</option>
+                    </select>
+                    <button type="submit" class="slot-save-btn">Save</button>
+                </div>
+            </div>
+        </form>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

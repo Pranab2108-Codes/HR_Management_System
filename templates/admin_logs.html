@@ -1,0 +1,90 @@
+{% extends "admin_base.html" %}
+{% block content %}
+
+<style>
+    .settings-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+    }
+    .settings-card h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    .settings-card p.desc {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1.75rem;
+        border-bottom: 1px solid #f1f3f5;
+        padding-bottom: 1rem;
+    }
+    .log-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.25rem;
+        transition: box-shadow 0.2s ease;
+        border-left: 4px solid #6c757d; /* Neutral gray accent for logs */
+    }
+    .log-card:hover {
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .log-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.25rem;
+    }
+    .log-title {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.1rem;
+        color: #212529;
+    }
+    .log-meta {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .log-ip {
+        background: #f8f9fa;
+        color: #495057;
+        border: 1px solid #ced4da;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-family: monospace;
+    }
+</style>
+
+<div class="settings-card" style="border-top: 4px solid #343a40; margin-bottom: 0;">
+    <h2>System Activity Logs</h2>
+    <p class="desc">Review recent administrative and user actions across the system.</p>
+    
+    {% if logs %}
+    <div style="display: flex; flex-direction: column; gap: 1rem; max-height: calc(100vh - 250px); overflow-y: auto; padding-right: 0.5rem;">
+        {% for log in logs %}
+        <div class="log-card">
+            <div class="log-header">
+                <div>
+                    <h3 class="log-title">{{ log['action'] }}</h3>
+                    <p class="log-meta"><strong style="color: #495057;">{{ log['actor_name'] }}</strong> &middot; {{ log['timestamp'] }}</p>
+                </div>
+                <div>
+                    <span class="log-ip" title="IP Address">{{ log['ip_address'] }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="desc" style="border: none;">No activity logs found.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

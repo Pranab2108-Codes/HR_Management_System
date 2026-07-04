@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} | Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+    <style>
+        /* Compact the sidebar menu and remove scrollbar */
+        .sidebar {
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        .sidebar::-webkit-scrollbar {
+            display: none; /* Chrome, Safari and Opera */
+        }
+        .menu-link {
+            padding: 0.45rem 0.75rem !important;
+            margin-bottom: 0.15rem !important;
+            font-size: 0.95rem !important;
+            font-weight: 500 !important;
+            text-decoration: none !important;
+        }
+        .admin-session-card {
+            margin-bottom: 0.75rem !important;
+            padding: 0.65rem !important;
+        }
+        .admin-session-card span, .admin-session-card small {
+            font-size: 0.75rem !important;
+        }
+    </style>
+    <script>
+        // If this tab was newly opened or closed and reopened, session storage is cleared.
+        // We immediately force a server logout to completely secure the admin panel.
+        if (!sessionStorage.getItem('admin_tab_session')) {
+            window.location.replace("{{ url_for('admin_logout') }}");
+        }
+    </script>
+</head>
+<body class="admin-shell">
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="brand-block">
+                <div style="text-align: center; margin-bottom: 0.5rem;">
+                    <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="Oditech Logo" style="width: 40px; height: 40px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                </div>
+                <p class="brand-title" style="font-size: 1.05rem; text-align: center; margin-bottom: 0.2rem;">Oditech Global</p>
+                <p class="brand-subtitle" style="text-align: center; font-size: 0.8rem; margin-top: 0;">Admin Panel</p>
+            </div>
+
+            {% if admin_authenticated %}
+            <div class="admin-session-card">
+                <span>Signed in as</span>
+                <strong>{{ current_admin_name or "Administrator" }}</strong>
+                <small>{{ current_admin_email }}</small>
+            </div>
+            {% endif %}
+
+            <nav class="menu">
+                <a class="menu-link {% if section == 'dashboard' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                <a class="menu-link {% if section == 'employees' %}active{% endif %}" href="{{ url_for('employee_management') }}">Employee Management</a>
+                <a class="menu-link {% if section == 'attendance' %}active{% endif %}" href="{{ url_for('attendance_management') }}">Attendance Management</a>
+                <a class="menu-link {% if section == 'leaves' %}active{% endif %}" href="{{ url_for('leave_management') }}">Leave Management</a>
+                <a class="menu-link {% if section == 'reports' %}active{% endif %}" href="{{ url_for('reports') }}">Reports</a>
+                <a class="menu-link {% if section == 'settings' %}active{% endif %}" href="{{ url_for('system_settings') }}">System Settings</a>
+                <a class="menu-link {% if section == 'policy' %}active{% endif %}" href="{{ url_for('admin_policy') }}">Company Policy</a>
+                <a class="menu-link {% if section == 'logs' %}active{% endif %}" href="{{ url_for('activity_logs') }}">Activity Logs</a>
+                <a class="menu-link {% if section == 'backup' %}active{% endif %}" href="{{ url_for('backup_restore') }}">Backup and Restore</a>
+                <a class="menu-link danger" href="{{ url_for('admin_logout') }}">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <h1>{{ page_title }}</h1>
+                <p>{{ page_subtitle }}</p>
+            </header>
+
+            <section class="content-surface">
+                {% block content %}{% endblock %}
+            </section>
+        </main>
+    </div>
+</body>
+</html>

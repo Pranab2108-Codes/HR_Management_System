@@ -1,0 +1,92 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<style>
+    .settings-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="settings-card" style="border-top: 4px solid #17a2b8;">
+    <h2 style="margin-top: 0; color: #2c3e50; font-size: 1.35rem;">Company Policies</h2>
+    <p style="color: #6c757d; font-size: 0.95rem; margin-bottom: 1.75rem; border-bottom: 1px solid #f1f3f5; padding-bottom: 1rem;">Official rules regarding attendance, leaves, and daily workflows.</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; align-items: stretch;">
+        <!-- Employee Policy -->
+        <div style="background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+            <h3 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1rem;">⏱️ Employee Policy</h3>
+            <h4 style="margin-top: 0; color: #334155; margin-bottom: 0.5rem;">Office Timings</h4>
+            <ul style="list-style: none; padding: 0; margin: 0 0 1rem 0; color: #475569; line-height: 1.8;">
+                <li><strong>Shift:</strong> 9:15 AM – 6:30 PM</li>
+                <li><strong>Grace Period:</strong> Up to 9:30 AM</li>
+                <li><span style="color: #ef4444;">Note:</span> Reporting even 1 minute beyond 9:30 AM will not be considered under the grace period.</li>
+            </ul>
+            <h4 style="margin-top: 0; color: #334155; margin-bottom: 0.5rem;">Attendance</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; color: #475569; line-height: 1.8;">
+                <li>All employees are expected to report to the office within the prescribed office timings.</li>
+                <li>Repeated late reporting may lead to disciplinary action.</li>
+                <li>Employees must inform their Reporting Manager and HR in case of delay or absence.</li>
+            </ul>
+        </div>
+
+        <!-- HR Policy -->
+        <div style="background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+            <h3 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1rem;">🏢 HR Policy</h3>
+            <h4 style="margin-top: 0; color: #334155; margin-bottom: 0.5rem;">General HR Guidelines</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; color: #475569; line-height: 1.8;">
+                <li>All employees must comply with the company rules, regulations, and code of conduct.</li>
+                <li>Employees are required to maintain professional behavior in the workplace.</li>
+                <li>HR reserves the right to review and update policies as required.</li>
+            </ul>
+        </div>
+
+        <!-- On-boarding Policy -->
+        <div style="background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+            <h3 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1rem;">👋 On-boarding Policy</h3>
+            <h4 style="margin-top: 0; color: #334155; margin-bottom: 0.5rem;">Joining Formalities</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; color: #475569; line-height: 1.8;">
+                <li>Employees must submit all required documents during joining.</li>
+                <li>The probation period shall be 3 months unless otherwise specified.</li>
+                <li>During the on-boarding process, employees will be informed about company policies, reporting structure, and responsibilities.</li>
+            </ul>
+        </div>
+
+        <!-- Termination Policy -->
+        <div style="background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+            <h3 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1rem;">🚪 Termination Policy</h3>
+            <h4 style="margin-top: 0; color: #334155; margin-bottom: 0.5rem;">Notice Period</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; color: #475569; line-height: 1.8;">
+                <li><strong>During Probation:</strong> 15 days notice.</li>
+                <li><strong>After Confirmation:</strong> 30 days notice.</li>
+                <li>Immediate separation may require notice pay as per company policy.</li>
+            </ul>
+        </div>
+
+        <!-- Leave Policy -->
+        <div style="background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; grid-column: 1 / -1; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+            <h3 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1rem;">🌴 Leave Policy</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <h4 style="margin-top: 0; color: #334155; margin-bottom: 0.5rem;">Probationary Employees</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; color: #475569; line-height: 1.8;">
+                        <li>Employees may avail up to 1 day of sick/emergency leave per month during probation.</li>
+                        <li>Any additional leave will be treated as Leave Without Pay.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-top: 0; color: #334155; margin-bottom: 0.5rem;">Confirmed Employees</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; color: #475569; line-height: 1.8;">
+                        <li>Employees earn 1 day of leave for every 20 days worked.</li>
+                        <li>Employees are entitled to up to 12 days of Sick Leave per year.</li>
+                        <li>All leave must be approved by the Reporting Manager and HR before availing.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

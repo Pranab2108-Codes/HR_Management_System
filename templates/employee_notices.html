@@ -1,0 +1,29 @@
+{% extends "employee_base.html" %}
+{% block content %}
+{% if notifications %}
+<div class="employee-notice-grid">
+    {% for notice in notifications %}
+    <article class="employee-notice-card {% if notice['office_closed'] %}closure{% endif %}">
+        <div class="employee-notice-card-head">
+            <div class="employee-notice-meta">
+                <span class="employee-notice-date">{{ notice["notice_date"] }}</span>
+                <span class="employee-notice-day">{{ notice["day_label"] }}</span>
+            </div>
+            {% if notice["office_closed"] %}
+            <span class="employee-notice-pill">Office Closed</span>
+            {% else %}
+            <span class="employee-notice-pill standard">Announcement</span>
+            {% endif %}
+        </div>
+        <h2 class="employee-notice-title">{{ notice["title"] }}</h2>
+        <p class="employee-notice-copy">{{ notice["message"] }}</p>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="employee-notice-empty">
+    <h2>No new notices</h2>
+    <p>There are currently no published employee notifications.</p>
+</div>
+{% endif %}
+{% endblock %}

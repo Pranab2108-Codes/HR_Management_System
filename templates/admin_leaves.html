@@ -1,0 +1,281 @@
+{% extends "admin_base.html" %}
+{% block content %}
+{% if message %}
+<p class="notice">{{ message }}</p>
+{% endif %}
+
+<style>
+    .settings-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .settings-card:hover {
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        transform: translateY(-2px);
+    }
+    .settings-card h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    .settings-card p.desc {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1.75rem;
+        border-bottom: 1px solid #f1f3f5;
+        padding-bottom: 1rem;
+    }
+    .custom-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .custom-input-group label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .custom-input-group input, .custom-input-group select {
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 1rem;
+        color: #212529;
+        transition: all 0.2s ease-in-out;
+        background-color: #f8f9fa;
+        font-family: inherit;
+    }
+    .custom-input-group input:focus, .custom-input-group select:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        background-color: #fff;
+    }
+</style>
+
+<div class="settings-card" style="border-top: 4px solid #007bff;">
+    <h2>Leave & Attendance Snapshot</h2>
+    <p class="desc">Filter the daily attendance snapshot by date and department.</p>
+    
+    <form method="get" action="{{ url_for('leave_management') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <div class="custom-input-group" style="flex: 1; min-width: 200px;">
+            <label>Filter Date</label>
+            <input type="date" name="date" value="{{ selected_date }}">
+        </div>
+        <div class="custom-input-group" style="flex: 1; min-width: 200px;">
+            <label>Department</label>
+            <select name="dept_detail">
+                <option value="">All Departments</option>
+                {% for card in department_cards %}
+                <option value="{{ card['department_id'] }}" {% if selected_department_id == card['department_id'] %}selected{% endif %}>{{ card['dept_name'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="panel-btn" style="padding: 0.85rem 1.5rem; font-size: 1rem; height: 100%;">Apply Filter</button>
+        <a href="{{ url_for('individual_attendance_snapshot') }}" class="panel-btn secondary link-btn" style="padding: 0.85rem 1.5rem; font-size: 1rem; display: inline-flex; align-items: center; text-decoration: none;">Individual Snapshot</a>
+    </form>
+</div>
+
+{% if selected_department %}
+<div class="settings-card" style="border-top: 4px solid #17a2b8;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+        <h2 style="margin: 0;">{{ selected_department['dept_name'] }} Snapshot ({{ selected_date }})</h2>
+        <a href="{{ url_for('leave_management', date=selected_date) }}" style="font-size: 0.85rem; color: #007bff; text-decoration: none; font-weight: 600;">&larr; Back to Overview</a>
+    </div>
+    <p class="desc">Detailed view of attendance and leaves for this department.</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; border: 1px solid #e9ecef; text-align: center;">
+            <span style="display: block; font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase;">Total Members</span>
+            <strong style="font-size: 1.5rem; color: #212529;">{{ selected_department['total_members'] }}</strong>
+        </div>
+        <div style="background: #e7f6ea; padding: 1rem; border-radius: 6px; border: 1px solid #c3e6cb; text-align: center;">
+            <span style="display: block; font-size: 0.85rem; color: #2d6b3d; margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase;">Present</span>
+            <strong style="font-size: 1.5rem; color: #155724;">{{ selected_department['present_count'] }}</strong>
+        </div>
+        <div style="background: #fff3f3; padding: 1rem; border-radius: 6px; border: 1px solid #ffc8c8; text-align: center;">
+            <span style="display: block; font-size: 0.85rem; color: #dc3545; margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase;">Absent</span>
+            <strong style="font-size: 1.5rem; color: #a4161a;">{{ selected_department['absent_count'] }}</strong>
+        </div>
+        <div style="background: #fff8ef; padding: 1rem; border-radius: 6px; border: 1px solid #e3bf8a; text-align: center;">
+            <span style="display: block; font-size: 0.85rem; color: #98600f; margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase;">On Leave</span>
+            <strong style="font-size: 1.5rem; color: #8a6d1f;">{{ selected_department['leave_count'] }}</strong>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div>
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #28a745; margin-bottom: 0.75rem;">Present Employees</h3>
+            <div class="table-wrap" style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e4e8; border-radius: 8px;">
+                <table style="width: 100%; border-collapse: collapse; margin: 0;">
+                    <thead style="position: sticky; top: 0; background: #f3f7fb; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+                        <tr>
+                            <th>Emp Code</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in selected_department['present_employees'] %}
+                        <tr>
+                            <td><strong>{{ emp['emp_code'] }}</strong></td>
+                            <td>{{ emp['full_name'] }}</td>
+                            <td><span style="background: #d4edda; color: #155724; padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">{{ emp['attendance_status'] }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 1rem; color: #6c757d;">No employees present.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div>
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #dc3545; margin-bottom: 0.75rem;">Absent Employees</h3>
+            <div class="table-wrap" style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e4e8; border-radius: 8px;">
+                <table style="width: 100%; border-collapse: collapse; margin: 0;">
+                    <thead style="position: sticky; top: 0; background: #f3f7fb; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+                        <tr>
+                            <th>Emp Code</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in selected_department['absent_employees'] %}
+                        <tr>
+                            <td><strong>{{ emp['emp_code'] }}</strong></td>
+                            <td>{{ emp['full_name'] }}</td>
+                            <td><span style="background: #f8d7da; color: #721c24; padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">{{ emp['attendance_status'] }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 1rem; color: #6c757d;">No employees absent.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="settings-card" style="border-top: 4px solid #17a2b8;">
+    <h2>Department Snapshot Overview ({{ selected_date }})</h2>
+    <p class="desc">Select a department card to view specific absent and on-leave employees.</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+        {% for card in department_cards %}
+        <a href="{{ url_for('leave_management', date=selected_date, dept_detail=card['department_id']) }}" style="text-decoration: none; color: inherit; display: block;">
+            <div style="border: 1px solid #e0e4e8; border-radius: 8px; padding: 1.25rem; transition: transform 0.2s ease, box-shadow 0.2s ease; background: #fff;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.borderColor='#b8cbe0';" onmouseout="this.style.transform='none'; this.style.boxShadow='none'; this.style.borderColor='#e0e4e8';">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="margin: 0; font-size: 1.15rem; color: #212529;">{{ card['dept_name'] }}</h3>
+                    {% if card['new_request_count'] > 0 %}
+                    <span style="background: #dc3545; color: #fff; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: bold;">{{ card['new_request_count'] }} New</span>
+                    {% endif %}
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <div style="background: #f8f9fa; padding: 0.75rem; border-radius: 6px; text-align: center; border: 1px solid #e9ecef;">
+                        <span style="display: block; font-size: 0.75rem; color: #6c757d; font-weight: 600; text-transform: uppercase;">Present</span>
+                        <strong style="color: #28a745; font-size: 1.25rem;">{{ card['present_count'] }}</strong>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 0.75rem; border-radius: 6px; text-align: center; border: 1px solid #e9ecef;">
+                        <span style="display: block; font-size: 0.75rem; color: #6c757d; font-weight: 600; text-transform: uppercase;">Absent / Leave</span>
+                        <strong style="color: #dc3545; font-size: 1.25rem;">{{ card['absent_count'] + card['leave_count'] }}</strong>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% else %}
+        <p class="desc" style="border: none;">No department data available.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="leave-requests-section" class="settings-card" style="border-top: 4px solid #28a745; margin-bottom: 0;">
+    <h2>Leave Requests</h2>
+    <p class="desc">Manage and approve employee leave applications.</p>
+    
+    <div class="table-wrap" style="max-height: 500px; overflow-y: auto; border: 1px solid #e0e4e8; border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse; margin: 0;">
+            <thead style="position: sticky; top: 0; background: #f3f7fb; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+                <tr>
+                    <th>Applicant</th>
+                    <th>Leave Type</th>
+                    <th>Date Range</th>
+                    <th>Days</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Applied On</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in leave_requests %}
+                <tr>
+                    <td><strong>{{ req['applicant_name'] or 'Unknown' }}</strong></td>
+                    <td>{{ req['leave_type'] }}</td>
+                    <td style="white-space: nowrap;">
+                        {% if req['from_date'] == req['to_date'] %}
+                            {{ req['from_date'] }}
+                        {% else %}
+                            {{ req['from_date'] }} to<br>{{ req['to_date'] }}
+                        {% endif %}
+                    </td>
+                    <td>{{ req['days'] }}</td>
+                    <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ req['reason'] }}">{{ req['reason'] }}</td>
+                    <td>
+                        {% set status_lower = (req['status'] or '')|lower %}
+                        {% if status_lower == 'approved' %}
+                            <span style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Approved</span>
+                        {% elif status_lower == 'rejected' %}
+                            <span style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Rejected</span>
+                        {% else %}
+                            <span style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">{{ req['status'] }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size: 0.85rem; color: #6c757d;">{{ req['applied_on'][:10] }}</td>
+                    <td>
+                        {% if req['status']|lower in ('pending', 'new', 'new request') %}
+                        <div style="display: flex; gap: 0.5rem;">
+                            <form method="post" action="{{ url_for('approve_leave_request', leave_id=req['id']) }}" style="margin: 0;">
+                                <input type="hidden" name="date" value="{{ selected_date }}">
+                                {% if selected_department_id %}
+                                <input type="hidden" name="dept_detail" value="{{ selected_department_id }}">
+                                {% endif %}
+                                <button type="submit" class="row-btn" style="background: #28a745; color: white; padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="return confirm('Approve this leave request?');">Approve</button>
+                            </form>
+                            <form method="post" action="{{ url_for('reject_leave_request', leave_id=req['id']) }}" style="margin: 0;">
+                                <input type="hidden" name="date" value="{{ selected_date }}">
+                                {% if selected_department_id %}
+                                <input type="hidden" name="dept_detail" value="{{ selected_department_id }}">
+                                {% endif %}
+                                <button type="submit" class="row-btn" style="background: #dc3545; color: white; padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="return confirm('Reject this leave request?');">Reject</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <span style="color: #adb5bd; font-size: 0.85rem; font-style: italic;">--</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem; color: #6c757d;">No leave requests found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

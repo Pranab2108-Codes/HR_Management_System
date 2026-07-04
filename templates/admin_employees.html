@@ -1,0 +1,233 @@
+{% extends "admin_base.html" %}
+{% block content %}
+{% if message %}
+<p class="notice">{{ message }}</p>
+{% endif %}
+
+<style>
+    .settings-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .settings-card:hover {
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        transform: translateY(-2px);
+    }
+    .settings-card h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    .settings-card p.desc {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1.75rem;
+        border-bottom: 1px solid #f1f3f5;
+        padding-bottom: 1rem;
+    }
+    .custom-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .custom-input-group label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .custom-input-group input, .custom-input-group select {
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 1rem;
+        color: #212529;
+        transition: all 0.2s ease-in-out;
+        background-color: #f8f9fa;
+        font-family: inherit;
+    }
+    .custom-input-group input:focus, .custom-input-group select:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        background-color: #fff;
+    }
+</style>
+
+<!-- Add / Edit Employee Card -->
+<div class="settings-card" id="employee-form-section" style="border-top: 4px solid {% if edit_employee %}#fd7e14{% else %}#007bff{% endif %};">
+    <h2>{% if edit_employee %}Edit Employee: {{ edit_employee.full_name }}{% else %}Add New Employee{% endif %}</h2>
+    <p class="desc">{% if edit_employee %}Update employee details and portal access.{% else %}Register a new employee and grant portal access.{% endif %}</p>
+    
+    <form method="post" action="{% if edit_employee %}{{ url_for('edit_employee', employee_id=edit_employee.id) }}{% else %}{{ url_for('add_employee') }}{% endif %}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
+            <div class="custom-input-group">
+                <label>Employee Code</label>
+                <input type="text" name="emp_code" value="{{ edit_employee.emp_code if edit_employee else new_emp_code }}">
+            </div>
+            <div class="custom-input-group">
+                <label>Full Name</label>
+                <input type="text" name="full_name" value="{{ edit_employee.full_name if edit_employee else '' }}" required>
+            </div>
+            <div class="custom-input-group">
+                <label>Department</label>
+                <select name="department_id" required>
+                    <option value="">-- Select Department --</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if edit_employee and edit_employee.department_id == dept.id %}selected{% endif %}>{{ dept.dept_name }}</option>
+                    {% endfor %}
+                    <option value="other">Other (Add New)</option>
+                </select>
+                <input type="text" name="new_department_name" placeholder="Enter new department name" style="display: none; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 6px; font-size: 1rem;">
+            </div>
+            <div class="custom-input-group">
+                <label>Role</label>
+                <select name="role_id" required>
+                    <option value="">-- Select Role --</option>
+                    {% for role in roles %}
+                    <option value="{{ role.id }}" {% if edit_employee and edit_employee.role_id == role.id %}selected{% endif %}>{{ role.role_name }}</option>
+                    {% endfor %}
+                    <option value="other">Other (Add New)</option>
+                </select>
+                <input type="text" name="new_role_name" placeholder="Enter new role name" style="display: none; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 6px; font-size: 1rem;">
+            </div>
+            <div class="custom-input-group">
+                <label>Email</label>
+                <input type="email" name="email" value="{{ edit_employee.email if edit_employee else '' }}">
+            </div>
+            <div class="custom-input-group">
+                <label>Phone</label>
+                <input type="text" name="phone" value="{{ edit_employee.phone if edit_employee else '' }}">
+            </div>
+            <div class="custom-input-group">
+                <label>Join Date</label>
+                <input type="date" name="join_date" value="{{ edit_employee.join_date if edit_employee else '' }}">
+            </div>
+            <div class="custom-input-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="Active" {% if edit_employee and edit_employee.status == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="Inactive" {% if edit_employee and edit_employee.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            <div class="custom-input-group" style="grid-column: 1 / -1;">
+                <label>Portal Password {% if edit_employee %}(Leave blank to keep current){% endif %}</label>
+                <input type="text" name="portal_password" placeholder="Enter password to enable/update portal access">
+            </div>
+        </div>
+        
+        <div class="button-row" style="margin-top: 1.5rem;">
+            <button type="submit" class="panel-btn" style="padding: 0.85rem 1.5rem; font-size: 1rem;">
+                {% if edit_employee %}Save Changes{% else %}Add Employee{% endif %}
+            </button>
+            {% if edit_employee %}
+            <a class="panel-btn secondary link-btn" style="padding: 0.85rem 1.5rem; font-size: 1rem; display: inline-flex; align-items: center;" href="{{ url_for('employee_management') }}">Cancel</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Employee List Card -->
+<div class="settings-card" id="employee-directory-section" style="border-top: 4px solid #28a745;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1.5rem; gap: 1rem;">
+        <div>
+            <h2 style="margin: 0; border: none; padding: 0;">Employee Directory</h2>
+            <p class="desc" style="margin: 0; border: none; padding: 0;">View, search, and manage all employee records.</p>
+        </div>
+        <form method="get" action="{{ url_for('employee_management') }}#employee-directory-section" style="display: flex; gap: 0.5rem; align-items: stretch;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search name, code..." style="padding: 0.5rem 1rem; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95rem;">
+            <button type="submit" class="panel-btn" style="padding: 0.5rem 1rem; border-radius: 6px;">Search</button>
+            {% if query %}
+            <a href="{{ url_for('employee_management') }}#employee-directory-section" class="panel-btn secondary link-btn" style="padding: 0.5rem 1rem; border-radius: 6px; display: inline-flex; align-items: center;">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="table-wrap" style="max-height: 500px; overflow-y: auto; border: 1px solid #e0e4e8; border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse; margin: 0;">
+            <thead style="position: sticky; top: 0; background: #f3f7fb; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Portal Access</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr style="{% if emp.status|lower == 'inactive' %}background-color: #f8f9fa; opacity: 0.7;{% endif %}">
+                    <td><strong>{{ emp.emp_code }}</strong></td>
+                    <td>{{ emp.full_name }}</td>
+                    <td>{{ emp.dept_name or '--' }}</td>
+                    <td>{{ emp.role_name or '--' }}</td>
+                    <td>{{ emp.email or '--' }}</td>
+                    <td>
+                        {% if emp.portal_access_enabled %}
+                        <span style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Enabled</span>
+                        <div style="font-size: 0.8rem; margin-top: 4px; color: #495057;">ID: <strong>{{ emp.portal_login_id }}</strong></div>
+                        {% else %}
+                        <span style="background: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if emp.status|lower == 'active' %}
+                        <span style="background: #cce5ff; color: #004085; border: 1px solid #b8daff; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Active</span>
+                        {% else %}
+                        <span style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a class="row-btn" href="{{ url_for('employee_management', edit_id=emp.id, q=query) }}#employee-form-section">Edit</a>
+                            {% if emp.status|lower != 'inactive' %}
+                            <form method="post" action="{{ url_for('deactivate_employee', employee_id=emp.id) }}" style="margin: 0;">
+                                <input type="hidden" name="q" value="{{ query }}">
+                                <button type="submit" class="row-btn danger" onclick="return confirm('Are you sure you want to deactivate {{ emp.full_name }}?');">Deactivate</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem; color: #6c757d;">No employees found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('select[name="department_id"]').forEach(function(select) {
+        select.addEventListener('change', function() {
+            var input = this.parentNode.querySelector('input[name="new_department_name"]');
+            if(input) {
+                input.style.display = this.value === 'other' ? 'block' : 'none';
+                input.required = this.value === 'other';
+            }
+        });
+    });
+
+    document.querySelectorAll('select[name="role_id"]').forEach(function(select) {
+        select.addEventListener('change', function() {
+            var input = this.parentNode.querySelector('input[name="new_role_name"]');
+            if(input) {
+                input.style.display = this.value === 'other' ? 'block' : 'none';
+                input.required = this.value === 'other';
+            }
+        });
+    });
+</script>
+{% endblock %}

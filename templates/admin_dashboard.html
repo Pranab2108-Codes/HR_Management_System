@@ -1,0 +1,186 @@
+{% extends "admin_base.html" %}
+{% block content %}
+
+<style>
+    .settings-card {
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .settings-card:hover {
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        transform: translateY(-2px);
+    }
+    .settings-card h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    .settings-card p.desc {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1.75rem;
+        border-bottom: 1px solid #f1f3f5;
+        padding-bottom: 1rem;
+    }
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.25rem;
+    }
+    .metric-card {
+        background: #f8f9fa;
+        border: 1px solid #e0e4e8;
+        border-radius: 8px;
+        padding: 1.25rem;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    .metric-card:hover {
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    }
+    .metric-card.blue { border-bottom: 4px solid #007bff; }
+    .metric-card.green { border-bottom: 4px solid #28a745; }
+    .metric-card.red { border-bottom: 4px solid #dc3545; }
+    .metric-card.orange { border-bottom: 4px solid #fd7e14; }
+    .metric-card.purple { border-bottom: 4px solid #6f42c1; }
+    .metric-card.teal { border-bottom: 4px solid #20c997; }
+    
+    .metric-label {
+        display: block;
+        font-size: 0.85rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #212529;
+        margin: 0;
+    }
+    
+    .recent-activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .activity-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .activity-item:hover {
+        background: #fff;
+        border-color: #ced4da;
+    }
+    .activity-details p { margin: 0; color: #212529; font-weight: 600; font-size: 0.95rem; }
+    .activity-details small { color: #6c757d; font-size: 0.85rem; }
+    .activity-time { font-size: 0.85rem; color: #495057; font-weight: 600; background: #e9ecef; padding: 0.35rem 0.6rem; border-radius: 6px; }
+    
+    .dept-card {
+        display: block;
+        text-decoration: none;
+        background: #fff;
+        border: 1px solid #e0e4e8;
+        border-left: 4px solid #17a2b8;
+        border-radius: 8px;
+        padding: 1.25rem;
+        transition: all 0.2s ease;
+        color: inherit;
+    }
+    .dept-card:hover {
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        background: #f8f9fa;
+        border-color: #adb5bd;
+    }
+    .dept-card h3 { margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #212529; }
+    .dept-card p { margin: 0; font-size: 0.9rem; color: #6c757d; }
+</style>
+
+<div class="settings-card" style="border-top: 4px solid #007bff;">
+    <h2>Today's Overview</h2>
+    <p class="desc">Key HR metrics and attendance statistics for {{ today }}.</p>
+    
+    <div class="metric-grid">
+        <div class="metric-card blue">
+            <span class="metric-label">Total Employees</span>
+            <p class="metric-value">{{ total_employees }}</p>
+        </div>
+        <div class="metric-card green">
+            <span class="metric-label">Present</span>
+            <p class="metric-value">{{ present_today }}</p>
+        </div>
+        <div class="metric-card red">
+            <span class="metric-label">Absent</span>
+            <p class="metric-value">{{ absent_today }}</p>
+        </div>
+        <div class="metric-card orange">
+            <span class="metric-label">Late Marks</span>
+            <p class="metric-value">{{ late_today }}</p>
+        </div>
+        <div class="metric-card purple">
+            <span class="metric-label">On Leave</span>
+            <p class="metric-value">{{ on_leave_today }}</p>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+    <div class="settings-card" style="border-top: 4px solid #17a2b8; margin-bottom: 0;">
+        <h2>Department Activity</h2>
+        <p class="desc">Active workforce per department for {{ report_date }}.</p>
+        
+        <div style="display: grid; gap: 1rem; max-height: 380px; overflow-y: auto; padding-right: 0.5rem;">
+            {% for card in department_cards %}
+            <a href="{{ url_for('department_report', department_id=card['department_id'], date=report_date) }}" class="dept-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>{{ card['dept_name'] }}</h3>
+                    <span style="background: #e2e8f0; color: #334155; font-size: 0.8rem; padding: 0.25rem 0.6rem; border-radius: 999px; font-weight: 700;">View</span>
+                </div>
+                <p><strong>{{ card['working_employee_count'] }}</strong> employees working today</p>
+            </a>
+            {% else %}
+            <p class="desc" style="border: none;">No department data available.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="settings-card" style="border-top: 4px solid #6c757d; margin-bottom: 0;">
+        <h2>Recent Activity</h2>
+        <p class="desc">Latest actions recorded in the system.</p>
+        
+        <div class="recent-activity-list" style="max-height: 330px; overflow-y: auto; padding-right: 0.5rem;">
+            {% for log in recent_activity %}
+            <div class="activity-item">
+                <div class="activity-details">
+                    <p>{{ log['action'] }}</p>
+                    <small>{{ log['actor_name'] }}</small>
+                </div>
+                <span class="activity-time" title="{{ log['timestamp'] }}">{{ log['timestamp'][11:16] }}</span>
+            </div>
+            {% else %}
+            <p class="desc" style="border: none;">No recent activity found.</p>
+            {% endfor %}
+        </div>
+        
+        <div style="margin-top: 1.25rem; text-align: right;">
+            <a href="{{ url_for('activity_logs') }}" class="panel-btn secondary link-btn" style="padding: 0.6rem 1.2rem; font-size: 0.85rem; display: inline-flex; border-radius: 6px; text-decoration: none;">View All Logs</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
