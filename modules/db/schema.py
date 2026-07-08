@@ -58,6 +58,11 @@ def ensure_admin_users_table(conn):
             "email": os.environ.get("ADMIN3_EMAIL", "oditech.HR@gmail.com").strip(),
             "password": os.environ.get("ADMIN3_PASSWORD", "HR_oditech@48").strip(),
         },
+        {
+            "full_name": os.environ.get("ADMIN4_NAME", "Pranab Sethi").strip(),
+            "email": os.environ.get("ADMIN4_EMAIL", "pranabOdiware@gmail.com").strip(),
+            "password": os.environ.get("ADMIN4_PASSWORD", "Pranab@0218").strip(),
+        }
     ]
 
     for admin in DEFAULT_ADMINS:
