@@ -5,8 +5,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 # Railway persistent volume path
-# PERSISTENT_DIR = Path(os.environ.get("RAILWAY_VOLUME_MOUNT_PATH", "/data"))
-PERSISTENT_DIR = Path(os.environ.get("RAILWAY_VOLUME_MOUNT_PATH", str(BASE_DIR))) 
+PERSISTENT_DIR = Path(os.environ.get("RAILWAY_VOLUME_MOUNT_PATH", "/data"))
+# PERSISTENT_DIR = Path(os.environ.get("RAILWAY_VOLUME_MOUNT_PATH", str(BASE_DIR))) 
 
 # Database path
 DB_PATH = str(PERSISTENT_DIR / os.environ.get("HRMS_DB_NAME", "database.db"))
