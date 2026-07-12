@@ -134,3 +134,6 @@ def ensure_employee_hourly_notes_table(conn):
     if "status" not in existing_columns:
         conn.execute("ALTER TABLE employee_hourly_notes ADD COLUMN status TEXT")
         conn.commit()
+
+
+
